@@ -31,6 +31,8 @@ alias sz='source ~/.zshrc'
 gp() {
   if [ -z "$1" ]; then
     git push
+  elif [ "$2" == "priv" ] || [ "$2" == "private" ] || [ "$2" == "pr" ]; then
+    gh repo create "$1" --private --source=. --push
   else
     gh repo create "$1" --public --source=. --push
   fi
@@ -70,6 +72,10 @@ gbc_ym() {
     IFS=- read dd hr <<< \"\$day_hour\"
     gbc \"$yy-$mm-\$dd\" \"\$hr\" \"\$@\"
   }"
+}
+
+gpz() {
+  (cd ~/zrc_git && git add zshrc && git commit -m "$1" && git push)
 }
 
 export ZSH="$HOME/.oh-my-zsh"
