@@ -1,8 +1,9 @@
 # Git aliases
 alias gs='git status'
 alias ga-='git add'
-alias gaa='git add *'
+alias gaa='git add .'
 alias gc='git commit -am'
+alias gac='git add *; git commit -am'
 alias gl='git log --oneline --graph --decorate'
 alias glt='git log --graph --pretty=format:"%C(auto)%h %cd (%C(bold blue)$(git branch --show-current)%Creset) %s" --date=format:"%Y-%m-%d %H:%M:%S"'
 alias glp='git --no-pager log --graph --pretty=format:"%C(auto)%h %cd (%C(bold blue)$(git branch --show-current)%Creset) %s" --date=format:"%Y-%m-%d %H:%M:%S"'
@@ -16,26 +17,36 @@ alias gcH='git checkout HEAD'
 alias grH='git reset HEAD'
 alias removeUntracked='git clean -fd'
 alias gfix='git commit --amend'
+alias gp='git push -u origin main'
 alias gpl='git pull'
 
 alias py='python3'
 
 # Dotfile aliases
-alias zrc='cursor ~/.zshrc'
+alias zrc='nvim ~/.zshrc'
+alias nz='nvim ~/.zshrc'
+alias vz='code ~/.zshrc'
 alias cz='cursor ~/.zshrc'
-alias vzrc='vim ~/.zshrc'
-alias vz='vim ~/.zshrc'
+
 alias szrc='source ~/.zshrc'
 alias sz='source ~/.zshrc'
+alias z_path='echo $ZSH'
 
-gp() {
-  if [ -z "$1" ]; then
-    git push
-  elif [ "$2" == "priv" ] || [ "$2" == "private" ] || [ "$2" == "pr" ]; then
-    gh repo create "$1" --private --source=. --push
+# gicp [init_commit_msg] [repo_name] [pub for public]
+gicp() {
+  git init
+  git add .
+  git commit -m "$1"
+  if [ "$3" = "pu" ] || [ "$3" = "pub" ] || [ "$3" = "public" ]; then
+    gh repo create "$2" --public --source=. --push
   else
-    gh repo create "$1" --public --source=. --push
+    gh repo create "$2" --private --source=. --push
   fi
+}
+
+gcp() {
+  git commit -am "$1"
+  git push
 }
 
 # Custom commit with backdate
@@ -75,8 +86,21 @@ gbc_ym() {
 }
 
 gpz() {
-  (cd ~/zrc_git && git add zshrc && git commit -m "$1" && git push)
+  (cd ~/zrc_git && git add zshrc && git commit -m "$1" && git push && cd -)
 }
+
+# Helper aliases
+alias help_ruff='echo "
+ruff format --diff .     # preview changes (no edits)
+ruff format .            # apply formatting in place
+ruff check .             # lint only (no fix)
+ruff check --fix .       # lint + fix
+ruff check --select I --fix .   # imports only (PEP8 order)
+ruff check --fix . && ruff format .  # full pass
+"'
+
+export EDITOR='nvim'
+export VISUAL='nvim'
 
 export ZSH="$HOME/.oh-my-zsh"
 ZSH_THEME="robbyrussell" # ZSH_THEME="random" | echo $RANDOM_THEME | See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
@@ -84,5 +108,11 @@ alias zt='echo $RANDOM_THEME'
 zstyle ':omz:update' mode reminder  # just remind me to update when it's time
 COMPLETION_WAITING_DOTS="true"
 HIST_STAMPS="mm/dd/yyyy"
-plugins=(z fzf brew) # Which plugins would you like to load? Standard plugins can be found in $ZSH/plugins/, Custom plugins may be added to $ZSH_CUSTOM/plugins/, Example format: plugins=(rails git textmate ruby lighthouse), Add wisely, as too many plugins slow down shell startup.
+plugins=(z fzf brew) # plugins=(z fzf brew) for oh-my-zsh, plugins=(z fzf brew) for zinit
 source $ZSH/oh-my-zsh.sh
+export PYENV_ROOT="$HOME/.pyenv"
+command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
+export PYENV_ROOT="$HOME/.pyenv"
+command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
