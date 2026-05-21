@@ -49,6 +49,39 @@ gcp() {
   git push
 }
 
+stash_resume() {
+    local src="/Users/parker/IMPORTANT/Parker_Cassar_Resume.pdf"
+    local dest_dir="/Users/parker/IMPORTANT/z_etc/old_resumes"
+
+    if [[ ! -f "$src" ]]; then
+        echo "Error: $src does not exist"
+        return 1
+    fi
+
+    # Find the highest existing letter prefix (A-Z) in the destination folder
+    local next_letter="A"
+    local highest=""
+    for f in "$dest_dir"/[A-Z]_Parker_Cassar_Resume.pdf(N); do
+        local letter="${${f:t}[1]}"
+        if [[ -z "$highest" || "$letter" > "$highest" ]]; then
+            highest="$letter"
+        fi
+    done
+
+    if [[ -n "$highest" ]]; then
+        # Increment to the next letter
+        next_letter=$(printf "\\$(printf '%03o' $(( $(printf '%d' "'$highest") + 1 )))")
+    fi
+
+    if [[ "$next_letter" > "Z" ]]; then
+        echo "Error: ran out of letters (past Z)"
+        return 1
+    fi
+
+    local dest="$dest_dir/${next_letter}_Parker_Cassar_Resume.pdf"
+    mv "$src" "$dest" && echo "Stashed → $dest"
+}
+
 # Custom commit with backdate
 # Example: gbc 24-06-10 15 "msg"
 gbc() {
@@ -85,7 +118,7 @@ gbc_ym() {
   }"
 }
 
-gpz() {
+gcpz() {
   (cd ~/zrc_git && git add zshrc && git commit -m "$1" && git push && cd -)
 }
 
